@@ -18,14 +18,22 @@ def setup_test_binaries_p2im():
         os.makedirs(f"{BINARIES_ROOT}/p2im/stripped")
         os.makedirs(f"{BINARIES_ROOT}/p2im/original")
         os.makedirs(f"{BINARIES_ROOT}/p2im/no_propagation")
+        os.makedirs(f"{BINARIES_ROOT}/p2im/best_propagation")
         os.system(f"cp {TESTING_ROOT}/p2im-real_firmware/binary/* {BINARIES_ROOT}/p2im/stripped")
         os.system(f"cp {TESTING_ROOT}/p2im-real_firmware/binary/* {BINARIES_ROOT}/p2im/original")
         os.system(f"cp {TESTING_ROOT}/p2im-real_firmware/binary/* {BINARIES_ROOT}/p2im/no_propagation")
+        os.system(f"cp {TESTING_ROOT}/p2im-real_firmware/binary/* {BINARIES_ROOT}/p2im/best_propagation")
+
 
         # strip binaries
         for binary in os.listdir(f"{BINARIES_ROOT}/p2im/stripped"):
             binary_path = f"{BINARIES_ROOT}/p2im/stripped/{binary}"
             os.system(f"arm-none-eabi-strip --strip-all {binary_path}")
+
+        for binary in os.listdir(f"{BINARIES_ROOT}/p2im/original"):
+            binary_path = f"{BINARIES_ROOT}/p2im/original/{binary}"
+            # rename to binary_original
+            os.system(f"mv {binary_path} {binary_path}_original")
 
         for binary in os.listdir(f"{BINARIES_ROOT}/p2im/no_propagation"):
             binary_path = f"{BINARIES_ROOT}/p2im/no_propagation/{binary}"
@@ -33,10 +41,11 @@ def setup_test_binaries_p2im():
             # rename to binary_no_propagation
             os.system(f"mv {binary_path} {binary_path}_no_propagation")
 
-        for binary in os.listdir(f"{BINARIES_ROOT}/p2im/original"):
-            binary_path = f"{BINARIES_ROOT}/p2im/original/{binary}"
-            # rename to binary_original
-            os.system(f"mv {binary_path} {binary_path}_original")
+        for binary in os.listdir(f"{BINARIES_ROOT}/p2im/best_propagation"):
+            binary_path = f"{BINARIES_ROOT}/p2im/best_propagation/{binary}"
+            os.system(f"arm-none-eabi-strip -g {binary_path}")
+            # rename to binary_best_propagation
+            os.system(f"mv {binary_path} {binary_path}_best_propagation")
 
 
 def setup_xfl():

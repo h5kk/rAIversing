@@ -216,7 +216,7 @@ class LayeredEvaluator(EvaluatorInterface):
         predicted_fn, predicted_layers = load_funcs_data(os.path.join(run_path, f"{binary}.json"), get_layers=True)
         original_fn, original_layers = load_funcs_data(os.path.join(run_path, f"{binary}_original.json"),
                                                        get_layers=True)
-        best_fn, best_layers = load_funcs_data(os.path.join(run_path, f"{binary}_original_stripped.json"),
+        best_fn, best_layers = load_funcs_data(os.path.join(run_path, f"{binary}_best_propagation.json"),
                                                get_layers=True)
         worst_fn, worst_layers = load_funcs_data(os.path.join(run_path, f"{binary}_no_propagation.json"),
                                                  get_layers=True)

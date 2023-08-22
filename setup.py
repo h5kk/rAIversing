@@ -41,11 +41,6 @@ def setup_test_binaries_p2im():
             # rename to binary_no_propagation
             os.system(f"mv {binary_path} {binary_path}_no_propagation")
 
-        for binary in os.listdir(f"{BINARIES_ROOT}/p2im/best_propagation"):
-            binary_path = f"{BINARIES_ROOT}/p2im/best_propagation/{binary}"
-            os.system(f"arm-none-eabi-strip -g {binary_path}")
-            # rename to binary_best_propagation
-            os.system(f"mv {binary_path} {binary_path}_best_propagation")
 
 
 def setup_xfl():

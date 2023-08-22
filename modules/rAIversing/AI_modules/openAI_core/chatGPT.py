@@ -122,7 +122,7 @@ class ChatGPTModule(AiModuleInterface):
         # self.chat_medium = revChatGPT.V3.Chatbot(api_key=self.api_key, engine=self.engine.medium())
         # self.chat_large = revChatGPT.V3.Chatbot(api_key=self.api_key, engine=self.engine.large())
         trunc_offset = 100
-
+        self.console.log(f"[bold yellow]Initializing ChatGPT with engine {self.engine.value} and temperature {self.temperature}")
         self.chat_small = revChatGPT.V3.Chatbot(api_key=self.api_key, engine=self.engine.small(),
                                                 max_tokens=max(self.engine.small_range()) + trunc_offset,
                                                 truncate_limit=max(self.engine.small_range()),

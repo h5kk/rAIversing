@@ -4,7 +4,6 @@ import time
 from pathlib import Path
 
 from rich.progress import Progress, TimeElapsedColumn
-
 from rAIversing.AI_modules import AiModuleInterface
 from rAIversing.Engine import rAIverseEngine
 from rAIversing.Ghidra_Custom_API import binary_to_c_code, existing_project_to_c_code, folder_processor
@@ -106,7 +105,7 @@ class EvaluationManager:
                             state = f.read()
                             if state == "done":
                                 if debug:
-                                    print(f"extraction for {model_name} and {source_dir_name} already done")
+                                    progress.print(f"extraction for {model_name} and {source_dir_name} already done")
                                 continue
                     except FileNotFoundError:
                         pass
@@ -131,7 +130,7 @@ class EvaluationManager:
                                 break
                             if output:
                                 if debug:
-                                    print(output.strip().decode())
+                                    progress.print(output.strip().decode())
                                 if "INFO  REPORT: Analysis succeeded for file:" in output.decode():
                                     progress.advance(task_import)
 
@@ -159,25 +158,37 @@ class EvaluationManager:
                                 break
                             if output:
                                 if debug:
-                                    print(output.strip().decode())
+                                    progress.print(output.strip().decode())
                                 if "#@#@#@#@#@#@#" in output.decode() or "rAIversing/modules/ghidra/ghidra_scripts/ExtractCcode.java (HeadlessAnalyzer)" in output.decode():
                                     progress.advance(task_extraction)
-
                     except KeyboardInterrupt:
                         exit(-1)
-                    for binary_path in Path(os.path.join(source_dir, "original")).rglob("*"):
-                        binary = os.path.basename(binary_path).replace("_original", "")
+                    for binary_path in Path(os.path.join(source_dir, "stripped")).rglob("*"):
+                        binary = os.path.basename(binary_path)#.replace("_original", "")
                         export_path = os.path.join(project_location, binary)
+                        original_json_path = os.path.join(export_path, f"{binary}_original.json")
+                        print(original_json_path)
                         try:
                             time.sleep(1)
-                            existing_project_to_c_code(project_location=project_location, binary_name=f"{binary}_original",
-                                                       project_name=f"eval_{model_name}_{source_dir_name}",
-                                                       export_with_stripped_names=True, export_path=export_path,
-                                                       debug=debug,max_cpu=self.connections,folder_path="original"
-                                                       )
+                            cmd=existing_project_to_c_code(project_location=project_location, binary_name=f"{binary}",
+                                                        project_name=f"eval_{model_name}_{source_dir_name}",
+                                                        export_with_stripped_names=original_json_path, export_path=export_path,
+                                                        debug=debug,max_cpu=self.connections,folder_path="stripped",
+                                                        get_cmd=True
+                                                        )
+                            process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                            while True:
+                                output = process.stdout.readline()
+                                if process.poll() is not None:
+                                    break
+                                if output:
+                                    if debug:
+                                        progress.print(output.strip().decode())
+                                    if "#@#@#@#@#@#@#" in output.decode() or "rAIversing/modules/ghidra/ghidra_scripts/ExtractCcode.java (HeadlessAnalyzer)" in output.decode():
+                                        progress.advance(task_extraction)
                         except KeyboardInterrupt:
                             exit(-1)
-                        progress.advance(task_extraction)
+
 
                     with open(os.path.join(project_location, "extraction_done"), "w") as f:
                         f.write("done")

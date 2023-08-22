@@ -64,7 +64,7 @@ class DefaultEvaluator(EvaluatorInterface):
 
         predicted_fn = load_funcs_data(os.path.join(run_path, f"{binary}.json"))
         original_fn = load_funcs_data(os.path.join(run_path, f"{binary}_original.json"))
-        best_fn = load_funcs_data(os.path.join(run_path, f"{binary}_original_stripped.json"))
+        best_fn = load_funcs_data(os.path.join(run_path, f"{binary}_best_propagation.json"))
         worst_fn = load_funcs_data(os.path.join(run_path, f"{binary}_no_propagation.json"))
 
         task_gen_comp = self.progress.add_task(f"[bold bright_yellow]Generating 4 comparisons", total=4)

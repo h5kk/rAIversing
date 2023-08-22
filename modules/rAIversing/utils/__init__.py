@@ -90,6 +90,12 @@ def check_reverse_engineer_fail_happend(code):
         return True
     elif "improve" in code.lower() and "function" in code.lower():
         return True
+    elif "reverse" in code.lower() and "function" in code.lower():
+        return True
+    elif "improve" in code.lower() and "engineer" in code.lower():
+        return True
+    elif "reverse" in code.lower() and "improve" in code.lower():
+        return True
     else:
         return False
 
@@ -216,15 +222,13 @@ def escape_failed_escapes(response_string, e):
         response_string = response_string.replace("""\"\\'""", """\"\'""")
         response_string = response_string.replace("""\\'\"""", """\'\"""")
 
-    elif "\'\\x" in response_string[char - 1:char + 4]:
-        response_string = response_string.replace("\'\\x", "\'\\\\x")
-
+    elif "\'\\" in response_string[char - 1:char + 4]:
+        response_string = response_string.replace("\'\\", "\'\\\\")
     elif """\\'""" in response_string[char - 1:char + 2]:
         response_string = response_string.replace("""\\'""", """\'""")
     else:
-        print(f"Unknown escape sequence in {original_string}")
+        print(f"{locator()}: Unknown escape sequence in {original_string}")
         print(f"Error: {e}")
-        print(locator())
     return response_string
 
 
@@ -388,9 +392,9 @@ def key_finder(key_parts, dictionary):
 
 def remove_comments(response):
     response = re.sub(re.compile("/\*.*?\*/", re.DOTALL), "",
-                    response)  # remove all occurrences streamed comments (/*COMMENT */) from string
+                      response)  # remove all occurrences streamed comments (/*COMMENT */) from string
     response = re.sub(re.compile("//.*?\n"), "",
-                    response)  # remove all occurrence single-line comments (//COMMENT\n ) from string
+                      response)  # remove all occurrence single-line comments (//COMMENT\n ) from string
     return response
 
 
@@ -467,7 +471,7 @@ def fix_single_quotes(string):
     string = string.replace("\':", "\":")
     return string
 
-    #TODO REMOVE? This is not used anywhere maybe in the future
+    # TODO REMOVE? This is not used anywhere maybe in the future
 def nondestructive_savefile_merge(base_file_path, new_file_path):
     """
     Merges the contents of new_file_path onto base_file_path, extending base_file_path.

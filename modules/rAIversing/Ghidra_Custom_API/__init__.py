@@ -101,7 +101,7 @@ def binary_to_c_code(binary_path, language_id="", compiler_id="", custom_headles
 
 def existing_project_to_c_code(project_location, binary_name=None, project_name=None, custom_headless_binary=None,
                                export_with_stripped_names=False, debug=False, export_path=None, max_cpu=2,
-                               folder_path=None):
+                               folder_path=None,get_cmd=False):
     if project_name is None:
         project_name = os.path.basename(project_location)
     if binary_name is None:
@@ -111,7 +111,7 @@ def existing_project_to_c_code(project_location, binary_name=None, project_name=
     if is_already_exported(export_path, binary_name + "_stripped" if export_with_stripped_names else binary_name):
         return
     if export_with_stripped_names:
-        export_with_stripped_names = "True"
+        export_with_stripped_names = export_with_stripped_names
     else:
         export_with_stripped_names = ""
     ah = HeadlessAnalyzerWrapper(custom_headless_binary)
@@ -128,8 +128,10 @@ def existing_project_to_c_code(project_location, binary_name=None, project_name=
 
     if debug:
         ah.print()
-    ah.run(debug)
-
+    if not get_cmd:
+        ah.run(debug)
+    else:
+        return ah.get_command()
 
 def import_changes_to_existing_project(project_location, binary_name=None, project_name=None,
                                        custom_headless_binary=None, debug=False):

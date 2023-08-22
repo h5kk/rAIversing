@@ -23,7 +23,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.lang.String;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+
 
 
 public class ExtractCcode extends GhidraScript {
@@ -40,9 +46,11 @@ public class ExtractCcode extends GhidraScript {
         String[] args = getScriptArgs();
         String export_path = null;
         boolean exp_str = false;
+        String exp_strip_str = null;
         int limit = 700;
         if (args.length > 2) {
             export_path = args[0];
+            exp_strip_str = args[1];
             exp_str = args[1].equals("True");
             try {
                 limit = Integer.parseInt(args[2]);
@@ -55,14 +63,18 @@ public class ExtractCcode extends GhidraScript {
                 limit = Integer.parseInt(args[1]);
             } catch (Exception e) {
                 exp_str = args[1].equals("True");
+                exp_strip_str = args[1];
             }
         } else if (args.length > 0) {
             export_path = args[0];
         }
-        extract(export_path, exp_str, limit, fpapi, fdapi, monitor, ifc);
+
+
+
+        extract(export_path, exp_str,exp_strip_str, limit, fpapi, fdapi, monitor, ifc);
     }
 
-    public void extract(String export_path, boolean export_with_stripped_names, int limit, FlatProgramAPI fpapi, FlatDecompilerAPI fdapi,
+    public void extract(String export_path, boolean export_stripped, String original_json_path , int limit, FlatProgramAPI fpapi, FlatDecompilerAPI fdapi,
                         ConsoleTaskMonitor monitor, DecompInterface ifc)
             throws InvalidInputException, DuplicateNameException, IOException {
         String program_name = fpapi.getProgramFile().getName();
@@ -94,9 +106,35 @@ public class ExtractCcode extends GhidraScript {
             System.out.printf("More than %d functions in %s. Exiting!%n", limit,  program_name);
             String message = "More than "  + limit + " functions in " + program_name + ". Exiting!";
             Files.write(Paths.get(export_path, "not_extracted"), message.getBytes());
-            print("#@#@#@#@#@#@#");
+            System.out.printf("#@#@#@#@#@#@#");
             return;
         }
+        if (!export_stripped & original_json_path != null) {
+            export_stripped = true;
+            String read = Files.readString(Paths.get(original_json_path));
+		    JsonObject save_file = new Gson().fromJson(read, JsonObject.class);
+		    JsonObject functions_dict;
+		    functions_dict = save_file.getAsJsonObject("functions");
+		    HashMap<String, String> name_lookup = new HashMap<>();
+		    for (String function_name : functions_dict.keySet()) {
+		         JsonObject function = functions_dict.getAsJsonObject(function_name);
+                 String entrypoint = function.getAsJsonPrimitive("entrypoint").getAsString();
+                 name_lookup.put(entrypoint, function_name);
+		    }
+		    for (int i = 0; i < funcs.size(); i++) {
+                Function func = funcs.get(i);
+                String entrypoint = func.getEntryPoint().toString("0x");
+                String function_name = name_lookup.get(entrypoint);
+                func.setName(function_name, SourceType.IMPORTED);
+                ArrayList<Function> functions = new ArrayList<>();
+                fm.getFunctions(true).forEachRemaining(functions::add);
+            }
+        }
+
+
+
+
+
 
         for (int i = 0; i < funcs.size(); i++) {
             Function func = funcs.get(i);
@@ -111,14 +149,14 @@ public class ExtractCcode extends GhidraScript {
             }
 
             String function_name;
-            if (export_with_stripped_names) {
+            if (export_stripped) {
                 function_name = "FUN_" + entrypoint.replace("0x", "");
             } else {
                 function_name = func.getName();
             }
 
             String code;
-            if (export_with_stripped_names) {
+            if (export_stripped) {
                 String original_name = func.getName();
                 func.setName(function_name, SourceType.IMPORTED);
                 ArrayList<Function> functions = new ArrayList<>();
@@ -166,10 +204,8 @@ public class ExtractCcode extends GhidraScript {
 
         program_name = fpapi.getCurrentProgram().toString().split(" ")[0].replace(".", "_");
 
-        if (!export_with_stripped_names) {
-            Path filepath = Paths.get(export_path, program_name+".c");
-            Files.write(filepath, cCode.getBytes());
-        }
+
+
 
         JsonObject save_file = new JsonObject();
         save_file.add("functions", function_metadata);
@@ -177,9 +213,11 @@ public class ExtractCcode extends GhidraScript {
         save_file.add("locked_functions", new JsonArray());
         save_file.add("used_tokens", new JsonPrimitive(0));
 
-        if (export_with_stripped_names) {
-            program_name += "_stripped";
+        if (export_stripped) {
+            program_name += "_best_propagation";
         }
+        Path filepath = Paths.get(export_path, program_name+".c");
+        Files.write(filepath, cCode.getBytes());
 
         if (!Files.exists(Paths.get(export_path, program_name+".json"))) {
             Path jspath = Paths.get(export_path, program_name+".json");

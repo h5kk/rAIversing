@@ -164,8 +164,8 @@ class ChatGPTModule(AiModuleInterface):
                 print(f"Answer: >{answer}<\n" + locator())
                 print(f"length of messages: {len(self.chat_large.conversation['default'])}")
                 raise IncompleteResponseException("Incomplete Response from Chat (no { found)" + locator())
-            self.chat_large.conversation["default"].pop()
             used_tokens = self.chat_large.get_token_count()
+            self.chat_large.conversation["default"].pop()
             self.chat_large.reset()
             time.sleep(30)
         elif needed_tokens in self.engine.medium_range():
@@ -178,8 +178,8 @@ class ChatGPTModule(AiModuleInterface):
                     print(f"messages: {self.chat_medium.conversation['default']}")
                 print(f"Answer: >{answer}<\n" + locator())
                 raise IncompleteResponseException("Incomplete Response from Chat (no { found)" + locator())
-            self.chat_medium.conversation["default"].pop()
             used_tokens = self.chat_medium.get_token_count()
+            self.chat_medium.conversation["default"].pop()
             self.chat_medium.reset()
             time.sleep(30)
         elif needed_tokens in self.engine.small_range():
@@ -193,8 +193,8 @@ class ChatGPTModule(AiModuleInterface):
                 print(f"Answer: >{answer}<\n" + locator())
                 print(f"needed tokens: {needed_tokens}")
                 raise IncompleteResponseException("Incomplete Response from Chat (no { found)" + locator())
-            self.chat_small.conversation["default"].pop()
             used_tokens = self.chat_small.get_token_count()
+            self.chat_small.conversation["default"].pop()
             self.chat_small.reset()
         else:
             raise Exception("Used more tokens than allowed: " + str(needed_tokens) + " > " + str(self.get_max_tokens()))

@@ -1,75 +1,20 @@
-import os
+from setuptools import setup, find_packages
 
-import nltk
-
-from modules.rAIversing.pathing import *
-
-
-def setup_test_binaries_p2im():
-    # clone repository and pull latest changes
-    if not os.path.exists(f"{TESTING_ROOT}/p2im-real_firmware"):
-        os.system(f"git clone https://github.com/RiS3-Lab/p2im-real_firmware.git {TESTING_ROOT}/p2im-real_firmware")
-    else:
-        os.system(f"cd {TESTING_ROOT}/p2im-real_firmware && git pull")
-
-    # copy usable binaries from p2im-real_firmware/binary to testing/samples/binaries/p2im
-    if not os.path.exists(f"{BINARIES_ROOT}/p2im"):
-        os.makedirs(f"{BINARIES_ROOT}/p2im")
-        os.makedirs(f"{BINARIES_ROOT}/p2im/stripped")
-        os.makedirs(f"{BINARIES_ROOT}/p2im/original")
-        os.makedirs(f"{BINARIES_ROOT}/p2im/no_propagation")
-        os.makedirs(f"{BINARIES_ROOT}/p2im/best_propagation")
-        os.system(f"cp {TESTING_ROOT}/p2im-real_firmware/binary/* {BINARIES_ROOT}/p2im/stripped")
-        os.system(f"cp {TESTING_ROOT}/p2im-real_firmware/binary/* {BINARIES_ROOT}/p2im/original")
-        os.system(f"cp {TESTING_ROOT}/p2im-real_firmware/binary/* {BINARIES_ROOT}/p2im/no_propagation")
-        os.system(f"cp {TESTING_ROOT}/p2im-real_firmware/binary/* {BINARIES_ROOT}/p2im/best_propagation")
-
-
-        # strip binaries
-        for binary in os.listdir(f"{BINARIES_ROOT}/p2im/stripped"):
-            binary_path = f"{BINARIES_ROOT}/p2im/stripped/{binary}"
-            os.system(f"arm-none-eabi-strip --strip-all {binary_path}")
-
-        for binary in os.listdir(f"{BINARIES_ROOT}/p2im/original"):
-            binary_path = f"{BINARIES_ROOT}/p2im/original/{binary}"
-            # rename to binary_original
-            os.system(f"mv {binary_path} {binary_path}_original")
-
-        for binary in os.listdir(f"{BINARIES_ROOT}/p2im/no_propagation"):
-            binary_path = f"{BINARIES_ROOT}/p2im/no_propagation/{binary}"
-            os.system(f"arm-none-eabi-strip --strip-all {binary_path}")
-            # rename to binary_no_propagation
-            os.system(f"mv {binary_path} {binary_path}_no_propagation")
-
-
-
-def setup_xfl():
-    if not os.path.exists(f"{MODULES_ROOT}/xfl"):
-        os.system(f"git clone https://github.com/kenohassler/xfl.git {MODULES_ROOT}/xfl")
-    else:
-        os.system(f"cd {MODULES_ROOT}/xfl && git pull")
-
-def setup_eval_repo():
-    if not os.path.exists(f"{EVALUATION_ROOT}"):
-        os.system(f"git clone https://github.com/MrMatch246/rAIversingEvaluation.git {EVALUATION_ROOT}")
-    else:
-        os.system(f"cd {EVALUATION_ROOT} && git pull")
-
-def setup_datagather_repo():
-    if not os.path.exists(f"{MODULES_ROOT}/DataGather"):
-        os.system(f"git clone https://github.com/MrMatch246/DataGather {MODULES_ROOT}/DataGather")
-    else:
-        os.system(f"cd {MODULES_ROOT}/DataGather && git pull")
-
-def main():
-    nltk.download('wordnet')
-    nltk.download('words')
-    nltk.download('stopwords')
-    setup_xfl()
-    setup_test_binaries_p2im()
-    setup_eval_repo()
-    setup_datagather_repo()
-
-
-if __name__ == "__main__":
-    main()
+setup(
+    name="ida_raiversing",
+    version="0.1.0",
+    packages=find_packages(),
+    install_requires=[
+        "openai>=1.0.0",
+        "rich>=13.0.0",
+        "requests>=2.31.0",
+        "python-dotenv>=1.0.0",
+        "tqdm>=4.66.0"
+    ],
+    author="Your Name",
+    author_email="your.email@example.com",
+    description="AI-powered reverse engineering assistant for IDA Pro",
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
+    python_requires=">=3.7",
+)

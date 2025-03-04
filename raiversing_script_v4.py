@@ -27,7 +27,13 @@ import ida_bytes
 import ida_nalt
 
 # Initialize OpenAI client
-client = OpenAI(api_key="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")  # Replace with your actual API key securely
+import os
+api_key = os.environ.get("OPENAI_API_KEY")
+if not api_key:
+    print("Warning: OPENAI_API_KEY environment variable not set")
+    # Fallback mechanism - you can implement as needed
+    # For example, prompt user or load from secure storage
+client = OpenAI(api_key=api_key)  # Get API key from environment variable
 
 # Global state for cancellation and thread safety
 g_analysis_cancelled = False
